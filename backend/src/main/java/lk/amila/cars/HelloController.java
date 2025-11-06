@@ -1,4 +1,4 @@
-package lk.amila.fio;
+package lk.amila.cars;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
