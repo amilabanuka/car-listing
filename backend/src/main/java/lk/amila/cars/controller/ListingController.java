@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lk.amila.cars.controller.dto.Listing;
+import lk.amila.cars.service.ListingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -21,6 +22,11 @@ import java.util.List;
 public class ListingController {
 
     private final ObjectMapper mapper = new ObjectMapper();
+    private final ListingService listingService;
+
+    public ListingController(ListingService listingService) {
+        this.listingService = listingService;
+    }
 
     // Accepts a raw JSON string (in the request body) and extracts the `pageProps.listings` array
     @PostMapping("/parse")
@@ -40,6 +46,14 @@ public class ListingController {
 
             // Use diamond operator to avoid explicit generic warning
             List<Listing> listings = mapper.convertValue(listingsNode, new TypeReference<>() {});
+            // Persist all parsed listings to MongoDB
+            try {
+                listingService.saveAll(listings);
+            } catch (Exception e) {
+                // Log and continue; return listings even if DB save fails
+                // In production you'd use a logger; keeping minimal to avoid adding logger dependency here
+                System.err.println("Warning: failed to persist listings: " + e.getMessage());
+            }
             return ResponseEntity.ok(listings);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.emptyList());

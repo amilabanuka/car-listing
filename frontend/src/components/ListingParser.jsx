@@ -1,10 +1,21 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import BrandsPanel from "./BrandsPanel";
+import API_BASE from "../config/api";
 
-export default function ListingParser() {
+export default function ListingParser({ initialTab = "listings" }) {
   const [jsonInput, setJsonInput] = useState("");
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // New: brands state
+  const [activeTab, setActiveTab] = useState(initialTab); // 'listings' or 'brands'
+  // brands UI extracted to src/components/BrandsPanel.jsx
+
+  // keep activeTab in sync if parent changes initialTab
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   const submit = async () => {
     setError(null);
@@ -18,7 +29,7 @@ export default function ListingParser() {
     try {
       // POST the raw JSON string to the backend ListingController
       // Use full origin to avoid depending on proxy configuration during dev
-      const res = await fetch("http://localhost:8080/api/listings/parse", {
+      const res = await fetch(`${API_BASE}/api/listings/parse`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: jsonInput,
@@ -121,78 +132,84 @@ export default function ListingParser() {
   };
 
   return (
-    <div style={{ padding: 16, fontFamily: "Arial, sans-serif" }}>
-      <h2>Listing JSON Parser (paste page JSON)</h2>
-
-      <textarea
-        value={jsonInput}
-        onChange={(e) => setJsonInput(e.target.value)}
-        placeholder="Paste raw JSON here (the controller will extract pageProps.listings)"
-        rows={12}
-        style={{ width: "100%", fontFamily: "monospace", marginBottom: 8 }}
-      />
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        <button onClick={submit} disabled={loading}>
-          {loading ? "Parsing..." : "Parse and Show Table"}
-        </button>
-        <button
-          onClick={() => {
-            setJsonInput("");
-            setListings([]);
-            setError(null);
-          }}
-        >
-          Clear
-        </button>
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <h2 style={{ margin: 0 }}>{activeTab === "listings" ? "Add listing" : "Brand"}</h2>
+        <div style={{ color: "#666", fontSize: 13 }}>{activeTab === "brands" ? "Manage brand id ↔ name" : "Paste page JSON and parse listings"}</div>
       </div>
 
-      {error && <div style={{ color: "darkred", marginBottom: 12 }}>{error}</div>}
+      {/* Listings UI (Add listing) */}
+      {activeTab === "listings" && (
+        <>
+          <textarea
+            value={jsonInput}
+            onChange={(e) => setJsonInput(e.target.value)}
+            placeholder="Paste raw JSON here (the controller will extract pageProps.listings)"
+            rows={12}
+            style={{ width: "100%", fontFamily: "monospace", marginBottom: 8 }}
+          />
 
-      {listings.length === 0 && !error && (
-        <div style={{ color: "#666" }}>No listings to show.</div>
-      )}
+          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            <button onClick={submit} disabled={loading}>
+              {loading ? "Parsing..." : "Parse and Show Table"}
+            </button>
+            <button
+              onClick={() => {
+                setJsonInput("");
+                setListings([]);
+                setError(null);
+              }}
+            >
+              Clear
+            </button>
+          </div>
 
-      {listings.length > 0 && (
-        <div style={{ overflowX: "auto", borderTop: "1px solid #eee", paddingTop: 8 }}>
-          <table style={{ borderCollapse: "collapse", width: "100%" }}>
-            <thead>
-              <tr>
-                {columns.map((col) => (
-                  <th
-                    key={col}
-                    style={{
-                      textAlign: "left",
-                      borderBottom: "1px solid #ddd",
-                      padding: "8px",
-                      background: "#fafafa",
-                    }}
-                  >
-                    {col}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {listings.map((row, ri) => (
-                <tr key={ri}>
-                  {columns.map((col) => {
-                    const val = row ? row[col] : undefined;
-                    return (
-                      <td
+          {error && <div style={{ color: "darkred", marginBottom: 12 }}>{error}</div>}
+
+          {listings.length === 0 && !error && <div style={{ color: "#666" }}>No listings to show.</div>}
+
+          {listings.length > 0 && (
+            <div style={{ overflowX: "auto", borderTop: "1px solid #eee", paddingTop: 8 }}>
+              <table style={{ borderCollapse: "collapse", width: "100%" }}>
+                <thead>
+                  <tr>
+                    {columns.map((col) => (
+                      <th
                         key={col}
-                        style={{ padding: "8px", borderBottom: "1px solid #f0f0f0", verticalAlign: "top" }}
+                        style={{
+                          textAlign: "left",
+                          borderBottom: "1px solid #ddd",
+                          padding: "8px",
+                          background: "#fafafa",
+                        }}
                       >
-                        {renderCell(col, val)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                        {col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {listings.map((row, ri) => (
+                    <tr key={ri}>
+                      {columns.map((col) => {
+                        const val = row ? row[col] : undefined;
+                        return (
+                          <td key={col} style={{ padding: "8px", borderBottom: "1px solid #f0f0f0", verticalAlign: "top" }}>
+                            {renderCell(col, val)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
+
+      {/* Brands UI */}
+      {activeTab === "brands" && <BrandsPanel />}
     </div>
   );
 }
