@@ -1,0 +1,43 @@
+{
+    "models": {
+        "model": {
+            "values": [
+                {
+                    "id": 75089,
+                    "name": "D2",
+                    "label": {
+                        "de_DE": "D2"
+                    },
+                    "makeId": 51798,
+                    "modelLineId": null,
+                    "vehicleTypeId": "C"
+                },
+                {
+                    "id": 75090,
+                    "name": "KWB",
+                    "label": {
+                        "de_DE": "KWB"
+                    },
+                    "makeId": 51798,
+                    "modelLineId": null,
+                    "vehicleTypeId": "C"
+                }
+            ]
+        },
+        "modelGroup": {
+            "values": [
+                {
+                    "id": 201561,
+                    "name": "Others",
+                    "makeId": 51798,
+                    "vehicleTypeId": "C",
+                    "label": { "de_DE": "Sonstige" }
+                }
+            ]
+        },
+        "modelLine": {
+            "values": []
+        }
+    }
+}
+

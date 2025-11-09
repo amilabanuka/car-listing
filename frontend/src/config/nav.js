@@ -5,9 +5,9 @@ const navItems = [
   { href: '/', label: 'Home', showInNav: true },
   { href: '/add-listing', label: 'Add listing', showInNav: true },
   { href: '/brand', label: 'Brand', showInNav: true },
+  { href: '/add-models', label: 'Add Models', showInNav: true },
   // Example for future pages:
   // { href: '/reports', label: 'Reports', showInNav: true },
 ];
 
 export default navItems;
-
